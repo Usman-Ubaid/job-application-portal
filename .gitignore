@@ -216,3 +216,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+
+# Vite
+vite.config.js.timestamp-*
+
+# Environment files (already covered for Python above, but explicit for JS too)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
