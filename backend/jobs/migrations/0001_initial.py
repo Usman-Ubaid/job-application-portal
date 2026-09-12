@@ -15,18 +15,46 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='JobPosting',
+            name="JobPosting",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=400)),
-                ('description', models.TextField()),
-                ('location', models.CharField(blank=True, max_length=60, null=True)),
-                ('salary_range', models.CharField(blank=True, max_length=50, null=True)),
-                ('employment_type', models.CharField(choices=[('FT', 'Full_time'), ('PT', 'Part_time'), ('C', 'Contract'), ('I', 'Internship')], max_length=2)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=400)),
+                ("description", models.TextField()),
+                ("location", models.CharField(blank=True, max_length=60, null=True)),
+                (
+                    "salary_range",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "employment_type",
+                    models.CharField(
+                        choices=[
+                            ("FT", "Full_time"),
+                            ("PT", "Part_time"),
+                            ("C", "Contract"),
+                            ("I", "Internship"),
+                        ],
+                        max_length=2,
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
