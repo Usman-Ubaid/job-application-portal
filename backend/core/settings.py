@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import environ
+from datetime import timedelta
 
 env = environ.Env()
 
@@ -47,9 +48,13 @@ INSTALLED_APPS = [
     "jobs",
     "companies",
     "applications",
+    "corsheaders",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -58,6 +63,27 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+CORS_ALLOW_CREDENTIALS = True
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_COOKIE": "access-token",
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_SECURE": False,
+    "AUTH_COOKIE_SAMESITE": "Lax",
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+}
 
 ROOT_URLCONF = "core.urls"
 
