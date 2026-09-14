@@ -33,7 +33,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_SAMESITE = "Lax"
 # Application definition
 
 INSTALLED_APPS = [
