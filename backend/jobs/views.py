@@ -58,6 +58,5 @@ class JobDetailView(APIView):
         self.check_object_permissions(request, job)
         job.delete()
         return Response(
-            {"message": "Job deleted successfully"},
             status=status.HTTP_204_NO_CONTENT,
         )
