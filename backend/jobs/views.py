@@ -16,7 +16,7 @@ class JobListCreateView(APIView):
         return [AllowAny()]
 
     def get(self, request):
-        jobs = JobPosting.objects.all()
+        jobs = JobPosting.objects.filter(is_active=True)
         serializer = JobPostingSerializer(jobs, many=True)
         return Response(serializer.data)
 
@@ -42,10 +42,10 @@ class JobDetailView(APIView):
         serializer = JobPostingSerializer(job)
         return Response(serializer.data)
 
-    def put(self, request, id):
+    def patch(self, request, id):
         job = get_object_or_404(JobPosting, id=id)
         self.check_object_permissions(request, job)
-        serializer = JobPostingSerializer(job, data=request.data)
+        serializer = JobPostingSerializer(job, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
