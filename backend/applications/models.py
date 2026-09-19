@@ -25,7 +25,6 @@ class Application(models.Model):
     email = models.EmailField(blank=True, null=True)
     cv = models.FileField(upload_to="cvs/", null=True, blank=True)
     job = models.ForeignKey(JobPosting, on_delete=models.CASCADE)
-    cover_letter = models.TextField(blank=True, null=True)
     applicant = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name="applications", on_delete=models.CASCADE
     )
@@ -36,7 +35,6 @@ class Application(models.Model):
     cover_letter_type = models.CharField(
         max_length=3,
         choices=COVER_LETTERS,
-        default=COVER_LETTER_TEXT,
         blank=True,
         null=True,
     )
