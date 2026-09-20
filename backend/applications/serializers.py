@@ -7,7 +7,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField()
     email = serializers.EmailField()
     cv = serializers.FileField()
-    cover_letter_type = serializers.ReadOnlyField()
     job = serializers.PrimaryKeyRelatedField(read_only=True)
     applicant = serializers.StringRelatedField(read_only=True)
     status = serializers.ReadOnlyField()
