@@ -2,8 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .permissions import IsSeeker
-from jobs.permissions import IsEmployer
+from common.permissions import IsEmployer, IsSeeker
 from .serializers import ApplicationSerializer, ApplicationStatusSerializer
 from .models import Application
 from jobs.models import JobPosting
