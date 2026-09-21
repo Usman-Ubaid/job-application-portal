@@ -1,9 +1,16 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(), message="A user with this email exists"
+            )
+        ]
+    )
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
