@@ -33,7 +33,7 @@ class JobListCreateView(APIView):
 
 class JobDetailView(APIView):
     def get_permissions(self):
-        if self.request.method in ["PUT", "DELETE"]:
+        if self.request.method in ["PATCH", "DELETE"]:
             return [IsOwner()]
         return [AllowAny()]
 

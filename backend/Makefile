@@ -19,3 +19,12 @@ black:
 
 start-db:
 	docker start job-portal_db
+
+test:
+	poetry run pytest
+
+test-users:
+	poetry run pytest users/tests/
+
+test-jobs:
+	poetry run pytest jobs/tests/
