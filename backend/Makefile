@@ -31,3 +31,6 @@ test-jobs:
 
 test-companies:
 	poetry run pytest companies/tests/
+
+test-applications:
+	poetry run pytest applications/tests/
