@@ -23,6 +23,12 @@ start-db:
 test:
 	poetry run pytest
 
+test-verbose:
+	poetry run pytest -v
+
+test-coverage:
+	poetry run pytest --cov=. --cov-report=html
+
 test-users:
 	poetry run pytest users/tests/
 
