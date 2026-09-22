@@ -28,3 +28,6 @@ test-users:
 
 test-jobs:
 	poetry run pytest jobs/tests/
+
+test-companies:
+	poetry run pytest companies/tests/
