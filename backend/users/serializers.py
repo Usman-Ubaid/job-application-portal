@@ -22,7 +22,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs.get("password") != attrs.get("password2"):
-            raise serializers.ValidationError({"password": "Password do no match"})
+            raise serializers.ValidationError({"password": "Passwords do no match"})
 
         return attrs
 
@@ -35,3 +35,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+        ]
+        read_only_fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+        ]
