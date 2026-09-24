@@ -16,6 +16,7 @@ db.sqlite3-journal
 # Environment
 .env
 .envrc
+.env*
 
 # Virtual environments
 .venv
@@ -29,25 +30,24 @@ poetry.toml
 .pytest_cache/
 .coverage
 htmlcov/
+/coverage
 
 # mypy
 .mypy_cache/
 
 # Node / React
 node_modules/
-dist-ssr/
-*.local
 .npm
 .eslintcache
 
-# Vite
-vite.config.js.timestamp-*
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
 
-# Environment files (JS)
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Vercel
+.vercel
 
 # VSCode
 tempCodeRunnerFile.py
@@ -55,27 +55,9 @@ tempCodeRunnerFile.py
 # macOS
 .DS_Store
 
-# Logs
-logs
-*.log
+# misc
+*.pem
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.pnpm-debug.log*
