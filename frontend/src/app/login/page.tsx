@@ -22,7 +22,9 @@ const LoginPage = () => {
       await login(email, password);
       router.push("/");
     } catch {
-      setError("We couldn't sign you in. Check your email and password and try again.");
+      setError(
+        "We couldn't sign you in. Check your email and password and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -45,8 +47,14 @@ const LoginPage = () => {
             className="absolute -bottom-48 -left-32 -z-10 size-96 rounded-full bg-blue-500/20 blur-3xl"
           />
 
-          <Link href="/" className="inline-flex w-fit items-center" aria-label="JobBridge home">
-            <span className="text-lg font-semibold tracking-tight">JobBridge</span>
+          <Link
+            href="/"
+            className="inline-flex w-fit items-center"
+            aria-label="JobBridge home"
+          >
+            <span className="text-lg font-semibold tracking-tight">
+              JobBridge
+            </span>
           </Link>
 
           <div className="relative max-w-xl py-10 lg:py-0">
@@ -58,9 +66,9 @@ const LoginPage = () => {
               Find work that moves you forward.
             </h1>
             <p className="mt-5 max-w-md text-base leading-7 text-blue-100/75 sm:text-lg">
-              Pick up where you left off and get one step closer to work you love.
+              Pick up where you left off and get one step closer to work you
+              love.
             </p>
-
           </div>
 
           <p className="hidden text-xs text-blue-100/50 lg:block">
@@ -71,8 +79,14 @@ const LoginPage = () => {
         <section className="flex items-center justify-center px-6 py-12 sm:px-10 lg:px-16">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
-              <Link href="/" className="inline-flex items-center" aria-label="JobBridge home">
-                <span className="text-lg font-semibold tracking-tight text-slate-950">JobBridge</span>
+              <Link
+                href="/"
+                className="inline-flex items-center"
+                aria-label="JobBridge home"
+              >
+                <span className="text-lg font-semibold tracking-tight text-slate-950">
+                  JobBridge
+                </span>
               </Link>
             </div>
 
@@ -183,7 +197,13 @@ const LoginPage = () => {
             </form>
 
             <p className="mt-8 text-center text-sm text-slate-500">
-              Your next opportunity is closer than you think.
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/register"
+                className="font-semibold text-blue-700 underline-offset-4 hover:underline"
+              >
+                Create one
+              </Link>
             </p>
           </div>
         </section>
