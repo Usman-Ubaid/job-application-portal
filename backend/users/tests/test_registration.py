@@ -24,6 +24,24 @@ def test_user_can_register():
     assert user.check_password("testpass123")
 
 
+def test_user_can_register_with_invalid_access_token_cookie():
+    client = APIClient()
+    client.cookies["access_token"] = "invalid-token"
+
+    response = client.post(
+        "/api/auth/register/",
+        {
+            "username": "testuser",
+            "email": "test@example.com",
+            "password": "testpass123",
+            "password2": "testpass123",
+            "role": "SK",
+        },
+    )
+
+    assert response.status_code == 201
+
+
 def test_user_cannot_register_with_mismatch_passwords():
     client = APIClient()
     response = client.post(
