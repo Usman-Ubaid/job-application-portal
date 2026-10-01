@@ -9,6 +9,11 @@ from .serializers import JobPostingSerializer
 
 
 class JobListCreateView(APIView):
+    def get_authenticators(self):
+        if self.request.method == "GET":
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         if self.request.method == "POST":
             return [IsEmployer()]
@@ -16,7 +21,9 @@ class JobListCreateView(APIView):
         return [AllowAny()]
 
     def get(self, request):
-        jobs = JobPosting.objects.filter(is_active=True)
+        jobs = JobPosting.objects.filter(is_active=True).select_related(
+            "employer__companyprofile"
+        )
         serializer = JobPostingSerializer(jobs, many=True)
         return Response(serializer.data)
 
@@ -32,13 +39,21 @@ class JobListCreateView(APIView):
 
 
 class JobDetailView(APIView):
+    def get_authenticators(self):
+        if self.request.method == "GET":
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         if self.request.method in ["PATCH", "DELETE"]:
             return [IsOwner()]
         return [AllowAny()]
 
     def get(self, request, id):
-        job = get_object_or_404(JobPosting, id=id)
+        job = get_object_or_404(
+            JobPosting.objects.select_related("employer__companyprofile"),
+            id=id,
+        )
         serializer = JobPostingSerializer(job)
         return Response(serializer.data)
 

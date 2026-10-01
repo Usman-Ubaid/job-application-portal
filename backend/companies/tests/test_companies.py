@@ -26,6 +26,7 @@ def create_company():
     def _create_company(user, **kwargs):
         defaults = {
             "company_name": "Solar Financial Services",
+            "address": "Berlin, Germany",
             "description": "We are a fintech company.",
             "website": "https://www.sfs.de",
             "user": user,
@@ -44,6 +45,7 @@ def test_get_my_company(create_user, create_company):
     response = client.get("/api/companies/mine/")
     assert response.status_code == 200
     assert response.data["company_name"] == "Solar Financial Services"
+    assert response.data["address"] == "Berlin, Germany"
 
 
 def test_create_company_profile(create_user):
@@ -54,6 +56,7 @@ def test_create_company_profile(create_user):
         "/api/companies/mine/",
         {
             "company_name": "Solar Financial Services",
+            "address": "Berlin, Germany",
             "description": "We are a fintech company.",
             "website": "https://www.sfs.de",
         },
@@ -61,6 +64,7 @@ def test_create_company_profile(create_user):
     company = CompanyProfile.objects.get(company_name="Solar Financial Services")
     assert response.status_code == 201
     assert company.user == user
+    assert company.address == "Berlin, Germany"
 
 
 def test_non_employer_cannot_create_company_profile(create_user):

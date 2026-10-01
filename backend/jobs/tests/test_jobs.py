@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 from jobs.models import JobPosting
 from users.models import User
+from companies.models import CompanyProfile
 
 pytestmark = pytest.mark.django_db
 
@@ -46,6 +47,39 @@ def test_get_all_jobs(create_user, create_job):
     response = client.get("/api/jobs/")
     assert response.status_code == 200
     assert response.data[0]["title"] == "Senior Software Engineer"
+    assert response.data[0]["company_name"] is None
+    assert response.data[0]["company_address"] is None
+
+
+def test_unauthenticated_user_can_get_jobs_with_invalid_access_cookie(
+    create_user, create_job
+):
+    employer = create_user(role="EP")
+    create_job(employer)
+    client = APIClient()
+    client.cookies["access_token"] = "invalid-token"
+
+    response = client.get("/api/jobs/")
+
+    assert response.status_code == 200
+    assert response.data[0]["title"] == "Senior Software Engineer"
+
+
+def test_public_jobs_include_company_name_and_address(create_user, create_job):
+    employer = create_user(role="EP")
+    CompanyProfile.objects.create(
+        user=employer,
+        company_name="Solar Financial Services",
+        address="Berlin, Germany",
+        description="We are a fintech company.",
+    )
+    create_job(employer)
+
+    response = APIClient().get("/api/jobs/")
+
+    assert response.status_code == 200
+    assert response.data[0]["company_name"] == "Solar Financial Services"
+    assert response.data[0]["company_address"] == "Berlin, Germany"
 
 
 def test_get_all_active_jobs(create_user, create_job):
