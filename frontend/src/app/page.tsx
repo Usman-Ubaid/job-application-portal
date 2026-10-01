@@ -1,69 +1,218 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import axiosInstance from "@/lib/axios";
+import Navbar from "@/components/Navbar";
+
+type EmploymentType = "FT" | "PT" | "C" | "I";
+
+interface Job {
+  id: number;
+  title: string;
+  description: string;
+  location: string | null;
+  salary_range: string | null;
+  employment_type: EmploymentType;
+  company_name: string | null;
+  company_address: string | null;
+  created_at: string;
+}
+
+type PostedWithin = "any" | "day" | "week" | "month";
+
+const employmentLabels: Record<EmploymentType, string> = {
+  FT: "Full-time",
+  PT: "Part-time",
+  C: "Contract",
+  I: "Internship",
+};
+
+const postedWithinOptions: Array<{ label: string; value: PostedWithin }> = [
+  { label: "Any time", value: "any" },
+  { label: "Past 24 hours", value: "day" },
+  { label: "Past week", value: "week" },
+  { label: "Past month", value: "month" },
+];
 
 export default function Home() {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
+  const [postedWithin, setPostedWithin] = useState<PostedWithin>("any");
+  const [employmentType, setEmploymentType] = useState<EmploymentType | "all">(
+    "all"
+  );
+
+  const filteredJobs = useMemo(() => {
+    const durations: Record<Exclude<PostedWithin, "any">, number> = {
+      day: 24 * 60 * 60 * 1000,
+      week: 7 * 24 * 60 * 60 * 1000,
+      month: 30 * 24 * 60 * 60 * 1000,
+    };
+    const cutoff =
+      postedWithin === "any" || currentTime === null
+        ? null
+        : currentTime - durations[postedWithin];
+
+    return jobs.filter((job) => {
+      const matchesType =
+        employmentType === "all" || job.employment_type === employmentType;
+      const postedAt = new Date(job.created_at).getTime();
+      const matchesDate = cutoff === null || postedAt >= cutoff;
+      return matchesType && matchesDate;
+    });
+  }, [currentTime, employmentType, jobs, postedWithin]);
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const response = await axiosInstance.get<unknown>("/jobs/");
+        const data = response.data;
+        if (
+          data === null ||
+          data === undefined ||
+          (typeof data === "object" &&
+            !Array.isArray(data) &&
+            Object.keys(data).length === 0)
+        ) {
+          setJobs([]);
+        } else if (Array.isArray(data)) {
+          setJobs(data);
+        } else {
+          setError(
+            "The jobs service returned an unexpected response. Please try again later."
+          );
+        }
+      } catch (requestError) {
+        if (axios.isAxiosError(requestError) && requestError.response) {
+          setError(
+            `The jobs service returned an error (${requestError.response.status}). Please try again later.`
+          );
+        } else if (axios.isAxiosError(requestError)) {
+          setError(
+            "We couldn’t connect to the jobs service. Check your connection and try again."
+          );
+        } else {
+          setError("An unexpected error occurred while loading jobs.");
+        }
+      } finally {
+        setCurrentTime(Date.now());
+        setIsLoading(false);
+      }
+    };
+    void loadJobs();
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <Navbar />
+
+      <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-12">
+        <h1 className="mb-6 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          Open Jobs
+        </h1>
+        {isLoading && (
+          <p className="py-8 text-center text-sm text-slate-600" role="status">
+            Loading jobs…
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        )}
+        {!isLoading && error && (
+          <div
+            className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800"
+            role="alert"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <h2 className="font-semibold">Unable to load jobs</h2>
+            <p className="mt-1">{error}</p>
+          </div>
+        )}
+        {!isLoading && !error && jobs.length === 0 && (
+          <p className="py-8 text-center text-sm text-slate-600">
+            No jobs are available right now.
+          </p>
+        )}
+        {!isLoading && !error && jobs.length > 0 && (
+          <div>
+            <div className="mb-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+              <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Posted
+                <select
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10"
+                  value={postedWithin}
+                  onChange={(event) =>
+                    setPostedWithin(event.target.value as PostedWithin)
+                  }
+                >
+                  {postedWithinOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-slate-700">
+                Employment type
+                <select
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10"
+                  value={employmentType}
+                  onChange={(event) =>
+                    setEmploymentType(
+                      event.target.value as EmploymentType | "all"
+                    )
+                  }
+                >
+                  <option value="all">All types</option>
+                  {Object.entries(employmentLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {filteredJobs.length === 0 ? (
+              <p className="rounded-xl border border-slate-200 bg-white py-8 text-center text-sm text-slate-600">
+                No jobs match these filters.
+              </p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {filteredJobs.map((job) => (
+                  <article
+                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-200 hover:shadow-md sm:p-6"
+                    key={job.id}
+                  >
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-semibold tracking-tight text-slate-950">
+                        <Link
+                          className="transition hover:text-blue-700"
+                          href={`/jobs/${job.id}`}
+                        >
+                          {job.title}
+                        </Link>
+                      </h2>
+                      <div className="mt-2 space-y-1 text-sm">
+                        <p className="font-medium text-slate-800">
+                          {job.company_name || "Company not provided"}
+                        </p>
+                        <p className="text-slate-600">
+                          {job.company_address ||
+                            job.location ||
+                            "Address not provided"}
+                        </p>
+                        <p className="text-slate-600">
+                          {employmentLabels[job.employment_type]}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
