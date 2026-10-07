@@ -3,14 +3,14 @@ from .views import (
     RegisterView,
     LoginView,
     LogoutView,
-    TokenRefreshView,
-    CurrentUserView,
+    CookieTokenRefreshView,
+    MeView,
 )
 
 urlpatterns = [
-    path("register/", RegisterView.as_view(), name="register"),
-    path("login/", LoginView.as_view(), name="login"),
-    path("logout/", LogoutView.as_view(), name="logout"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
-    path("user/", CurrentUserView.as_view(), name="user"),
+    path("register/", RegisterView.as_view(), name="auth-register"),
+    path("login/", LoginView.as_view(), name="auth-login"),
+    path("logout/", LogoutView.as_view(), name="auth-logout"),
+    path("token/refresh/", CookieTokenRefreshView.as_view(), name="auth-token-refresh"),
+    path("user/", MeView.as_view(), name="auth-me"),
 ]

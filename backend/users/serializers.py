@@ -52,7 +52,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         if not user.is_verified:
             raise AuthenticationFailed(
-                "Please verify your email address before signin in."
+                "Please verify your email address before signing in."
             )
 
         data["user"] = UserSerializer(user).data
