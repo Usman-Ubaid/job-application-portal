@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
-from common.permissions import IsEmployer, IsOwner
+from common.permissions import IsEmployer
 from .models import JobPosting
 from .serializers import JobPostingSerializer
 
@@ -46,8 +46,7 @@ class JobDetailView(APIView):
 
     def get_permissions(self):
         if self.request.method in ["PATCH", "DELETE"]:
-            return [IsOwner()]
-        return [AllowAny()]
+            return [AllowAny()]
 
     def get(self, request, id):
         job = get_object_or_404(

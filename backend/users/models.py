@@ -40,6 +40,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text="Designated whether user has confirmed their email address. Login is blocked until this is True",
     )
+    is_staff = models.BooleanField(
+        ("staff status"),
+        default=False,
+        help_text="Designates whether the user can log into the Django admin site.",
+    )
 
     # --- timestamps ---
     created_at = models.DateTimeField(auto_now_add=True)
