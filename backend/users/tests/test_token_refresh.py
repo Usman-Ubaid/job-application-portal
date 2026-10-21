@@ -1,5 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
+
 from users.models import User
 
 pytestmark = pytest.mark.django_db
@@ -22,7 +23,7 @@ def create_user():
 
 def test_valid_new_refresh_token(create_user):
     client = APIClient()
-    user = create_user()
+    create_user()
     login_response = client.post(
         "/api/auth/login/", {"email": "test@example.com", "password": "testpass123"}
     )

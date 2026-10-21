@@ -1,6 +1,7 @@
 import pytest
-from rest_framework.test import APIClient
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APIClient
+
 from applications.models import Application
 from jobs.models import JobPosting
 from users.models import User

@@ -1,8 +1,9 @@
 import pytest
 from rest_framework.test import APIClient
+
+from companies.models import CompanyProfile
 from jobs.models import JobPosting
 from users.models import User
-from companies.models import CompanyProfile
 
 pytestmark = pytest.mark.django_db
 
@@ -179,7 +180,7 @@ def test_unauthenticated_user_can_get_job(create_user, create_job):
 def test_get_job_id_does_not_exist(create_user, create_job):
     employer = create_user(role="EP")
     client = APIClient()
-    job = create_job(employer)
+    create_job(employer)
     response = client.get("/api/jobs/999/")
     assert response.status_code == 404
 
