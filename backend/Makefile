@@ -14,8 +14,8 @@ shell:
 install:
 	poetry install
 
-black:
-	black .
+format:
+	poetry run ruff format .
 
 start-db:
 	docker start job-portal_db

@@ -1,5 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
+
 from companies.models import CompanyProfile
 from users.models import User
 

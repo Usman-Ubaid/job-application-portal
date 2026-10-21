@@ -1,5 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
+
 from users.models import User
 
 pytestmark = pytest.mark.django_db
@@ -23,7 +24,7 @@ def create_user():
 def test_authenticated_user_can_logout(create_user):
     create_user()
     client = APIClient()
-    login_response = client.post(
+    client.post(
         "/api/auth/login/", {"email": "test@example.com", "password": "testpass123"}
     )
     response = client.post("/api/auth/logout/")
