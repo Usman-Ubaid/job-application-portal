@@ -2,11 +2,9 @@
 name = "job-application-portal-backend"
 version = "0.1.0"
 description = "A job portal web application built with Django and React"
-package-mode = false
 authors = [
     {name = "Usman Ubaid"}
 ]
-package-mode = false
 license = "MIT"
 requires-python = "^3.13"
 dependencies = [
@@ -17,6 +15,9 @@ dependencies = [
     "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
     "django-cors-headers (>=4.9.0,<5.0.0)"
 ]
+
+[tool.poetry]
+package-mode = false
 
 
 [build-system]
