@@ -2,6 +2,7 @@
 name = "job-application-portal-backend"
 version = "0.1.0"
 description = "A job portal web application built with Django and React"
+package-mode = false
 authors = [
     {name = "Usman Ubaid"}
 ]
