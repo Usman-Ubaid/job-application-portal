@@ -61,4 +61,4 @@ jobs:
         env:
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_jobportal
           SECRET_KEY: ci-test-secret-key-not-used-in-production
-        run: poetry run python manage.py test --verbosity=2
+        run: poetry run pytest -v
