@@ -4,8 +4,6 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from .factories import valid_login_payload
-
 LOGOUT_URL = reverse("auth-logout")
 LOGIN_URL = reverse("auth-login")
 
