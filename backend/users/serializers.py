@@ -18,6 +18,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, min_length=8, style={"input_type": "password"}
     )
+    password2 = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     class Meta:
         model = User
@@ -30,8 +31,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs: dict) -> dict:
-        if attrs["password"] != attrs.pop("password"):
-            raise serializers.ValidationError({"password": "Passwords do no match"})
+        if attrs["password"] != attrs.pop("password2"):
+            raise serializers.ValidationError({"password": "Passwords do not match"})
 
         return attrs
 

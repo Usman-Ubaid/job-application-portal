@@ -28,13 +28,6 @@ def migrate_user_primary_key_to_uuid(apps, schema_editor):
         # One stable mapping for the duration of this migration.
         id_map = {old_id: uuid.uuid4() for old_id in old_ids}
 
-        if not id_map:
-            # An empty table can still have its column type converted.
-            # This migration is designed for the existing populated DB.
-            raise RuntimeError(
-                "No users found; review this migration before proceeding."
-            )
-
         cursor.execute("""
             SELECT
                 ns.nspname,
@@ -106,6 +99,9 @@ def migrate_user_primary_key_to_uuid(apps, schema_editor):
             cursor.execute(f"DROP SEQUENCE {sequence_name}")
 
         def case_expression(column_name):
+            if not id_map:
+                return "NULL::uuid"
+
             column = quote(column_name)
             clauses = " ".join(
                 f"WHEN {old_id} THEN '{new_id}'::uuid"
