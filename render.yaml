@@ -2,6 +2,7 @@ services:
   - type: web
     name: jobportal-backend      
     runtime: python
+    plan: free
     rootDir: backend             
     buildCommand: poetry install --no-interaction
     startCommand: poetry run gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
