@@ -33,9 +33,9 @@ if env_file.exists():
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
 
 AUTH_COOKIE_SECURE = False
 AUTH_COOKIE_SAMESITE = "Lax"
