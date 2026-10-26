@@ -1,24 +1,23 @@
-services: 
+services:
   - type: web
-    name: jobportal-backend
+    name: jobportal-backend      
     runtime: python
-    rootDir: backend
+    rootDir: backend             
     buildCommand: poetry install --no-interaction
-    startCommand: poetry run gunicorn core.wsgi:application --bind 0.0.0.0:$poetry
-
+    startCommand: poetry run gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+           
     envVars:
       - key: SECRET_KEY
-        generateValue: true
+        generateValue: true      
       - key: DEBUG
-        value: "False"
+        value: "False"           
       - key: DATABASE_URL
         fromDatabase:
-          name: jobportal-db
+          name: jobportal-db     
           property: connectionString
 
 databases:
   - name: jobportal-db
     databaseName: jobportal
-    user: jobportal-user
+    user: jobportal              
     plan: free
-
