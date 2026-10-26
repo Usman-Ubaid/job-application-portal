@@ -3,7 +3,7 @@ services:
     name: jobportal-backend      
     runtime: python
     rootDir: backend             
-    buildCommand: poetry install --no-interaction
+    buildCommand: poetry install --no-interaction && poetry run python manage.py collectstatic --no-input
     startCommand: poetry run gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
            
     envVars:
