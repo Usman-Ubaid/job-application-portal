@@ -1,27 +1,26 @@
 name: CD
 
 on:
-    workflow_run:
-        workflows: ["CI"]
-        types: 
-            - completed
-        branches: 
-            - main
+  workflow_run:                          
+    workflows: ["CI"]                    
+    types:
+      - completed                        
+    branches:
+      - main                             
 
 jobs:
-    deploy:
-        name: Deploy to Render
-        runs-on: ubuntu-latest
-    
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-        steps:
-            - name: Trigger Render Deploy
-              run: |
-                curl --fail --silent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL  }}"
-                # --fail: treat HTTP error responses as failures (stops sieltn bad deploys)
-                # --silent: don't show progress output
-                # --show-error: but DO show errors if --fail triggers
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl --fail --silent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          # --fail:       treats 4xx/5xx HTTP responses as errors (non-zero exit code)
+          # --silent:     suppresses progress meter
+          # --show-error: still shows error message when --fail triggers
 
-            - name: Confirm deploy triggered
-              run: echo "Deploy triggered successfully. Check Render dashboard for status."
+      - name: Confirm deploy triggered
+        run: echo "Deploy triggered successfully. Check Render dashboard for status."
