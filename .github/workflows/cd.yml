@@ -13,15 +13,15 @@ jobs:
         name: Deploy to Render
         runs-on: ubuntu-latest
     
-        if: github.event.workflow_run.conclusion == 'success'
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
         steps:
             - name: Trigger Render Deploy
               run: |
-                curl --fail --sirlent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
+                curl --fail --silent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL  }}"
                 # --fail: treat HTTP error responses as failures (stops sieltn bad deploys)
                 # --silent: don't show progress output
                 # --show-error: but DO show errors if --fail triggers
 
             - name: Confirm deploy triggered
-              run: echo "Deploy triggered successfully. Check Render dashboard for status.""
+              run: echo "Deploy triggered successfully. Check Render dashboard for status."
