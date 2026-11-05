@@ -5,6 +5,7 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
     default: "JobPortal",
   },
   description: "Find your next opportunity or hire great talent.",
+  icons: {
+    icon: "data:,",
+  },
 };
 
 export default function RootLayout({
@@ -22,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="h-full bg-gray-50">{children}</body>
+      <body className="h-full bg-background">{children}</body>
     </html>
   );
 }
