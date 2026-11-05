@@ -7,7 +7,7 @@ export const isValidEmail = (email: string): boolean => {
   return true;
 };
 
-const ALLOWED_ROLES = ["seeker", "employer"] as const;
+const ALLOWED_ROLES = ["SEEKER", "EMPLOYER"] as const;
 export type UserRole = (typeof ALLOWED_ROLES)[number];
 
 export function isValidRole(role: string): role is UserRole {

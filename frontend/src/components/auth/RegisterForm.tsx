@@ -3,12 +3,13 @@
 import { isValidEmail, isValidRole } from "@/src/lib/validators";
 import React, { useState } from "react";
 import FieldError from "../FieldError";
+import { api, type ApiError } from "@/src/lib/api";
 
 interface FormData {
   email: string;
   firstName: string;
   lastName: string;
-  role: "seeker" | "employer";
+  role: "SEEKER" | "EMPLOYER";
   password: string;
   confirmPassword: string;
 }
@@ -16,12 +17,21 @@ interface FormData {
 type TouchedFields = Record<keyof FormData, boolean>;
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
+const SERVER_FIELD_MAP: Record<string, keyof FormData> = {
+  email: "email",
+  first_name: "firstName",
+  last_name: "lastName",
+  role: "role",
+  password: "password",
+  password2: "confirmPassword",
+};
+
 export default function RegisterForm() {
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
     lastName: "",
-    role: "seeker",
+    role: "SEEKER",
     password: "",
     confirmPassword: "",
   });
@@ -36,6 +46,7 @@ export default function RegisterForm() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -89,7 +100,32 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitted(true);
+    setFormError("");
     if (!validate()) return;
+    try {
+      await api.post("/v1/auth/register/", {
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        role: formData.role,
+        password: formData.password,
+        password2: formData.confirmPassword,
+      });
+    } catch (error) {
+      const apiError = error as Partial<ApiError> & { message?: string };
+      const fieldErrors: FormErrors = {};
+      for (const [key, messages] of Object.entries(apiError.errors ?? {})) {
+        const field = SERVER_FIELD_MAP[key];
+        if (field && messages.length > 0) fieldErrors[field] = messages[0];
+      }
+
+      setErrors(fieldErrors);
+      if (Object.keys(fieldErrors).length === 0) {
+        setFormError(
+          apiError.message ?? "Something went wrong. Please try again.",
+        );
+      }
+    }
   };
 
   return (
@@ -171,8 +207,8 @@ export default function RegisterForm() {
               <option value="" disabled>
                 Select a role
               </option>
-              <option value="seeker">Job Seeker</option>
-              <option value="employer">Employer</option>
+              <option value="SEEKER">Job Seeker</option>
+              <option value="EMPLOYER">Employer</option>
             </select>
 
             <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
@@ -211,6 +247,7 @@ export default function RegisterForm() {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          <FieldError id="password-error" message={errors.password} />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -235,6 +272,8 @@ export default function RegisterForm() {
             message={errors.confirmPassword}
           />
         </div>
+
+        <FieldError id="form-error" message={formError} />
 
         <button
           type="submit"
