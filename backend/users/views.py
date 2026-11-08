@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -27,11 +28,23 @@ class RegisterView(APIView):
     def post(self, request: Request) -> Response:
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user.is_verified = False
-        user.save(update_fields=["is_verified"])
 
-        send_verification_email(user, request)
+        try:
+            with transaction.atomic():
+                user = serializer.save()
+                user.is_verified = False
+                user.save(update_fields=["is_verified"])
+
+                send_verification_email(user, request)
+
+        except Exception:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Registration Failed. Please try again later.",
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
 
         return Response(
             {
@@ -217,8 +230,8 @@ class VerifyEmailView(APIView):
             )
 
         user = token_obj.user
-        user.is_active = True
-        user.save(update_fields=["is_active"])
+        user.is_verified = True
+        user.save(update_fields=["is_verified"])
 
         token_obj.delete()
 

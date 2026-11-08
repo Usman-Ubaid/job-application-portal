@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task(
     bind=True,
-    max_retires=3,
+    max_retries=3,
     default_retry_delay=60,
 )
 def send_verification_email_task(self, user_email, user_name, verify_url):
