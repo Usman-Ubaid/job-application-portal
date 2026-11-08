@@ -53,7 +53,18 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "common",
+    "django_celery_results",
 ]
+
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = ["json"]  # tasks are serialized as JSON
+CELERY_TASK_SERIALIZER = "json"  # when sending tasks to Redis
+CELERY_RESULT_SERIALIZER = "json"  # when storing results
+
+# Retry a failed task after 60s, up to 3 times
+# You'll define this per-task too, but good to have a default
+CELERY_TASK_MAX_RETRIES = 3
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -166,11 +177,28 @@ STORAGES = {
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+email_backend = env(
+    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
+
 MAILERS = {
     "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
+        "BACKEND": email_backend,
+        "OPTIONS": (
+            {
+                "host": env("EMAIL_HOST", default=""),
+                "port": env.int("EMAIL_PORT", default=587),
+                "use_tls": env.bool("EMAIL_USE_TLS", default=True),
+                "username": env("EMAIL_HOST_USER", default=""),
+                "password": env("EMAIL_HOST_PASSWORD", default=""),
+            }
+            if email_backend == "django.core.mail.backends.smtp.EmailBackend"
+            else {}
+        ),
     },
 }
+
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@jobportal.com")
 
 # Media
 MEDIA_URL = "/media/"

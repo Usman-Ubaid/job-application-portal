@@ -1,12 +1,20 @@
+from datetime import timedelta
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
+
 import pytest
+from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 
-from users.models import User
+from users.models import EmailVerificationToken, User
+from users.tasks import send_verification_email_task
 
 from .factories import valid_register_payload
 
 REGISTER_URL = reverse("auth-register")
+pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------------------
@@ -15,18 +23,19 @@ REGISTER_URL = reverse("auth-register")
 
 
 @pytest.fixture
-def register(api_client, db):
-    """
-    Wraps POST /auth/register/.
-
-    Including `db` here grants database access to every test that uses
-    this fixture — cleaner than marking every test individually.
-    """
+def register(api_client):
+    """Wrap POST /auth/register/."""
 
     def _register(payload):
         return api_client.post(REGISTER_URL, payload, format="json")
 
     return _register
+
+
+@pytest.fixture(autouse=True)
+def mock_verification_dispatch():
+    with patch("users.utils.send_verification_email_task.delay") as dispatch:
+        yield dispatch
 
 
 # ---------------------------------------------------------------------------
@@ -212,3 +221,106 @@ class TestRegisterHttpContract:
     def test_empty_body_is_rejected(self, register):
         response = register({})
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+class TestRegistrationVerificationEmail:
+    def test_registration_email_verification_and_login(
+        self,
+        register,
+        api_client,
+        settings,
+        django_capture_on_commit_callbacks,
+        mock_verification_dispatch,
+    ):
+        settings.MAILERS = {
+            "default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"}
+        }
+        mail.mailers["default"]
+        payload = valid_register_payload()
+
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            response = register(payload)
+            mock_verification_dispatch.assert_not_called()
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert len(callbacks) == 1
+        mock_verification_dispatch.assert_called_once()
+
+        user = User.objects.get(email=payload["email"])
+        token = EmailVerificationToken.objects.get(user=user)
+        assert not user.is_verified
+
+        task_kwargs = mock_verification_dispatch.call_args.kwargs
+        assert task_kwargs["user_email"] == user.email
+        assert task_kwargs["user_name"] == user.first_name
+        url = urlsplit(task_kwargs["verify_url"])
+        assert url.path == reverse("verify-email")
+        assert parse_qs(url.query) == {"token": [token.token]}
+
+        send_verification_email_task.run(**task_kwargs)
+        assert len(mail.outbox) == 1
+        message = mail.outbox[0]
+        assert message.to == [user.email]
+        assert message.subject == "Verify your email address"
+        assert task_kwargs["verify_url"] in message.body
+
+        credentials = {"email": user.email, "password": payload["password"]}
+        assert (
+            api_client.post(
+                reverse("auth-login"), credentials, format="json"
+            ).status_code
+            == status.HTTP_401_UNAUTHORIZED
+        )
+
+        verification = api_client.get(url.path, {"token": token.token})
+        assert verification.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        assert user.is_verified
+        assert not EmailVerificationToken.objects.filter(pk=token.pk).exists()
+        assert (
+            api_client.get(url.path, {"token": token.token}).status_code
+            == status.HTTP_400_BAD_REQUEST
+        )
+        assert (
+            api_client.post(
+                reverse("auth-login"), credentials, format="json"
+            ).status_code
+            == status.HTTP_200_OK
+        )
+
+    def test_invalid_registration_does_not_schedule_email(
+        self, register, django_capture_on_commit_callbacks, mock_verification_dispatch
+    ):
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            response = register(valid_register_payload(email="invalid"))
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert callbacks == []
+        mock_verification_dispatch.assert_not_called()
+
+    def test_expired_token_does_not_verify_user(self, create_user, api_client):
+        user = create_user(is_verified=False)
+        token = EmailVerificationToken.objects.create(user=user)
+        EmailVerificationToken.objects.filter(pk=token.pk).update(
+            created_at=timezone.now() - timedelta(hours=25)
+        )
+
+        response = api_client.get(reverse("verify-email"), {"token": token.token})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        user.refresh_from_db()
+        assert not user.is_verified
+        assert not EmailVerificationToken.objects.filter(pk=token.pk).exists()
+
+    def test_verification_does_not_reactivate_inactive_user(
+        self, create_user, api_client
+    ):
+        user = create_user(is_verified=False, is_active=False)
+        token = EmailVerificationToken.objects.create(user=user)
+
+        response = api_client.get(reverse("verify-email"), {"token": token.token})
+
+        assert response.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        assert user.is_verified
+        assert not user.is_active
