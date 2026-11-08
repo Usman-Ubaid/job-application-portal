@@ -61,4 +61,6 @@ jobs:
         env:
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_jobportal
           SECRET_KEY: ci-test-secret-key-not-used-in-production
+          CELERY_BROKER_URL: memory://
+          CELERY_RESULT_BACKEND: cache+memory://
         run: poetry run pytest -v
