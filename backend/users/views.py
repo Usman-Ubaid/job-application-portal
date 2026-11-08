@@ -8,7 +8,9 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .models import EmailVerificationToken
 from .serializers import RegisterSerializer, UserSerializer
+from .utils import send_verification_email
 
 User = get_user_model()
 
@@ -26,9 +28,10 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user.is_verified = False
+        user.save(update_fields=["is_verified"])
 
-        # TODO: dispatch a verification email task here
-        # send_verification_email
+        send_verification_email(user, request)
 
         return Response(
             {
@@ -171,6 +174,58 @@ class MeView(APIView):
             {
                 "success": True,
                 "data": UserSerializer(request.user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class VerifyEmailView(APIView):
+    """
+    GET /api/users/verify-email/?token=<token>
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        token_value = request.query_params.get("token")
+
+        if not token_value:
+            return Response(
+                {"success": False, "message": "No token provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token_obj = EmailVerificationToken.objects.select_related("user").get(
+                token=token_value
+            )
+
+        except EmailVerificationToken.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Invalid or already used token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if token_obj.is_expired():
+            token_obj.delete()
+            return Response(
+                {
+                    "success": False,
+                    "message": "Token has expired. Please register again or request a new link",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = token_obj.user
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+
+        token_obj.delete()
+
+        return Response(
+            {
+                "success": True,
+                "message": "Email verified successfully. You can now log in",
             },
             status=status.HTTP_200_OK,
         )

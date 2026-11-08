@@ -1,7 +1,11 @@
+import secrets
 import uuid
+from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 from .managers import UserManager
 
@@ -82,3 +86,32 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin_role(self) -> bool:
         return self.role == Role.ADMIN
+
+
+class EmailVerificationToken(models.Model):
+    """
+    Stores a one-time token used to verify a user's email address
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="email_verification_token",
+    )
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate a secure random token before saving
+        # secrets.token_urlsafe gives a URL-safe base64 string
+        if not self.token:
+            self.token = secrets.token_urlsafe(32)
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        """Token expires after 24 hours"""
+        expiry = self.created_at + timedelta(hours=24)
+        return timezone.now() > expiry
+
+    def __str__(self):
+        return f"VerificationToken for {self.user.email}"
