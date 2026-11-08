@@ -53,7 +53,18 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "common",
+    "django_celery_results",
 ]
+
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = ["json"]  # tasks are serialized as JSON
+CELERY_TASK_SERIALIZER = "json"  # when sending tasks to Redis
+CELERY_RESULT_SERIALIZER = "json"  # when storing results
+
+# Retry a failed task after 60s, up to 3 times
+# You'll define this per-task too, but good to have a default
+CELERY_TASK_MAX_RETRIES = 3
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
