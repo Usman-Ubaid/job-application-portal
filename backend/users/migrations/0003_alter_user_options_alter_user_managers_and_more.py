@@ -59,7 +59,7 @@ def migrate_user_primary_key_to_uuid(apps, schema_editor):
         for _, table, constraint, _, column_count, _ in fk_rows:
             if column_count != 1:
                 raise RuntimeError(
-                    f"Unexpected composite foreign key: " f"{table}.{constraint}"
+                    f"Unexpected composite foreign key: {table}.{constraint}"
                 )
 
         cursor.execute("""
@@ -84,7 +84,7 @@ def migrate_user_primary_key_to_uuid(apps, schema_editor):
 
         # Remove the primary key and the old auto-increment default.
         cursor.execute(
-            f"ALTER TABLE public.users_user " f"DROP CONSTRAINT {quote(pk_name)}"
+            f"ALTER TABLE public.users_user DROP CONSTRAINT {quote(pk_name)}"
         )
         cursor.execute(
             "ALTER TABLE public.users_user ALTER COLUMN id DROP IDENTITY IF EXISTS"
@@ -163,7 +163,6 @@ def migrate_user_primary_key_to_uuid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("users", "0002_alter_user_email"),
     ]
