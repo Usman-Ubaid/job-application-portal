@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 import environ
 
 env = environ.Env()
@@ -125,7 +126,11 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": dj_database_url.config(
+        default=env("DATABASE_URL"), conn_max_age=600, conn_health_checks=True
+    )
+}
 
 
 # Password validation
