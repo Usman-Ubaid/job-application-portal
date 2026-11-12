@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+.github
+
+# Dependencies — reinstalled inside the container
+node_modules
+
+# Next.js build output
+.next
+
+# Environment files — never copy secrets into the image
+.env.local
+.env.prod
+.env.development
+.env.production
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Editor
+.vscode
+.idea
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
