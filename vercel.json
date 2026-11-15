@@ -5,7 +5,8 @@
             "framework": "nextjs"
         }, 
         "api": {
-            "root": "backend/"
+            "root": "backend/",
+             "framework": "django"
         }
     }, 
     "rewrites": [
