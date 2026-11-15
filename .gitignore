@@ -17,6 +17,7 @@ db.sqlite3-journal
 .env
 .envrc
 .env*
+!backend/.env.example
 backend/.env.docker
 backend/.env.prod
 frontend/.env.prod
